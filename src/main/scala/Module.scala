@@ -18,4 +18,6 @@ trait Module {
   implicit val system: ActorSystem[Scheduler.Protocol] =
     ActorSystem(scheduler(), "PhilosopherLunch")
 
+  sys.addShutdownHook(system.terminate())
+
 }
