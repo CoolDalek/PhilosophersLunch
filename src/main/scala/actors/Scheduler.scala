@@ -6,7 +6,7 @@ import models.Fork
 
 trait Scheduler {
 
-  def apply(philosophersNumber: Int): Behavior[Protocol]
+  def apply(): Behavior[Protocol]
 
 }
 object Scheduler {

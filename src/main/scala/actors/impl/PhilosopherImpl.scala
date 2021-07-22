@@ -5,10 +5,11 @@ import actors.Philosopher._
 import actors.Scheduler.SchedulerActor
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
+import configs.PhilosophersConfig
 
 import scala.concurrent.duration._
 
-class PhilosopherImpl extends Philosopher {
+class PhilosopherImpl(implicit config: PhilosophersConfig) extends Philosopher {
 
   override def apply(schedulerActor: SchedulerActor, number: Int): Behavior[Protocol] =
     Behaviors.setup { ctx =>
@@ -17,8 +18,8 @@ class PhilosopherImpl extends Philosopher {
         Behaviors.receiveMessage {
 
           case Acquire(left, right) =>
-            ctx.log.info(s"Acquired $left, $right")
-            timers.startSingleTimer(Release(left, right), 5 seconds)
+            ctx.log.info(s"Acquired $left, $right by philosopher $number")
+            timers.startSingleTimer(Release(left, right), config.eatingTime)
             Behaviors.same
 
           case Release(left, right) =>
