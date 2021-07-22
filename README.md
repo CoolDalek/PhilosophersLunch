@@ -4,6 +4,8 @@ Download release archive and unzip it. Runnable files located in ```bin``` direc
 
 Use ```philosopherslunch``` file on linux and mac, ```philosopherslunch.bat``` on windows.
 
+You can change configuration ny modifying ```application.conf``` file.
+
 #### Project building
 
 Copy repository to your local. In project root run ```sbt``` tool with ```buildProject``` key (e.g. ```sbt buildProject```).

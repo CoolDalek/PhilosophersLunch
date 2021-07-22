@@ -45,8 +45,8 @@ object MakeConfigurable {
     }
 
     for {
-      _ <- addArgs(shName, "run() {", s"  addApp $arg")
-      _ <- addArgs(batName, "set _APP_ARGS=", s"call :add_app $arg")
+      _ <- addArgs(shName, "run() {", s"  addJava $arg")
+      _ <- addArgs(batName, "set _APP_ARGS=", s"call :add_java $arg")
     } yield addConf()
 
   }.recover {
