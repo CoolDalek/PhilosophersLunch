@@ -1,9 +1,16 @@
 package models
 
-class Shared[T](
-                 val resource: T,
-                 var isAvailable: Boolean = true,
-               ) {
+import scala.reflect._
+
+class Shared[T: ClassTag](
+                           val resource: T,
+                           var isAvailable: Boolean = true,
+                         ) {
+
+  private val resourceClass: Class[_] = classTag[T].runtimeClass
+
+  private def isResourceType[R: ClassTag]: Boolean =
+    classTag[R].runtimeClass == resourceClass
 
   override def toString: String =
     s"Shared($resource,$isAvailable)"
@@ -21,13 +28,15 @@ class Shared[T](
 }
 object Shared {
 
-  def apply[T](resource: T, isAvailable: Boolean = true): Shared[T] =
+  def apply[T: ClassTag](resource: T, isAvailable: Boolean = true): Shared[T] =
     new Shared(resource, isAvailable)
 
-  def unapply[T](any: Any): Option[(T, Boolean)] =
+
+  @unchecked
+  def unapply[T: ClassTag](any: Any): Option[(T, Boolean)] =
     any match {
-      case shared: Shared[T] =>
-        Some(shared.resource, shared.isAvailable)
+      case shared: Shared[_] if shared.isResourceType[T] =>
+        Some(shared.resource.asInstanceOf[T], shared.isAvailable)
       case _ =>
         None
     }
