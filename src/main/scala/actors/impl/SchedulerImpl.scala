@@ -1,19 +1,21 @@
 package actors.impl
 
+import java.util.PriorityQueue
+
 import actors.Philosopher.PhilosopherActor
 import actors.Scheduler._
 import actors.{Philosopher, _}
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import configs.PhilosophersConfig
-import models.{Fork, Shared}
+import models.{Fork, Shared, Worker}
 
 import scala.collection.mutable
 
 class SchedulerImpl(philosopher: Philosopher)
                    (implicit conf: PhilosophersConfig) extends Scheduler {
 
-  type WorkingQueue = mutable.Queue[Int]
+  type WorkingQueue = mutable.Queue[Worker]
   type Forks = Vector[Shared[Fork]]
   type Philosophers = Vector[PhilosopherActor]
 
@@ -42,7 +44,7 @@ class SchedulerImpl(philosopher: Philosopher)
 
   def setup(implicit ctx: ActorContext[Protocol]): (WorkingQueue, Forks, Philosophers) = {
     val total = conf.philosophersNumber
-    val workingQueue = mutable.Queue.tabulate(total)(identity)
+    val workingQueue = mutable.Queue.tabulate(total)(Worker)
     val philosophers = Vector.newBuilder[PhilosopherActor]
     val forks = Vector.newBuilder[Shared[Fork]]
 
@@ -63,7 +65,8 @@ class SchedulerImpl(philosopher: Philosopher)
       Shared(Fork(current, next))
     }
 
-    workingQueue.foreach { i =>
+    workingQueue.foreach { worker =>
+      val i = worker.number
       philosophers.addOne(spawnPhilosopher(i))
       forks.addOne(createFork(i))
     }
@@ -77,10 +80,13 @@ class SchedulerImpl(philosopher: Philosopher)
                ctx: ActorContext[Protocol]): Unit = {
     ctx.log.info("Scheduling work")
 
-    def isAvailable(i: Int) = {
-      val fork = forks(i)
-      fork.isAvailable && forks(fork.resource.next).isAvailable
-    }
+    def isAvailable(worker: Worker) =
+      if(worker.isHigh) {
+        val fork = forks(worker.number)
+        fork.isAvailable && forks(fork.resource.next).isAvailable
+      } else {
+        false
+      }
 
     def acquire(i: Int): Philosopher.Acquire = {
       val left = forks(i)
@@ -88,28 +94,30 @@ class SchedulerImpl(philosopher: Philosopher)
 
       ctx.log.info(s"Acquire $left and $right")
 
-      left.isAvailable = false
-      right.isAvailable = false
+      left.setUnavailable()
+      right.setUnavailable()
 
       Philosopher.Acquire(left.resource, right.resource)
     }
 
     @scala.annotation.tailrec
     def inWork(position: Int = 0): Unit = {
-      val workerNumber = queue(position)
+      val worker = queue(position)
 
-      if(isAvailable(workerNumber)) {
-        ctx.log.info(s"Philosopher $workerNumber is available.")
-        philosophers(workerNumber) ! acquire(workerNumber)
+      if(isAvailable(worker)) {
+        val number = worker.number
+        ctx.log.info(s"Philosopher $worker is available.")
+        philosophers(number) ! acquire(number)
 
         queue.remove(position)
-        queue.enqueue(workerNumber)
-
+        queue.enqueue(worker)
+        worker.setLow()
         inWork()
       } else {
 
         val next = position + 1
         if(next < queue.length) {
+          worker.setHigh()
           inWork(next)
         }
 
@@ -123,8 +131,8 @@ class SchedulerImpl(philosopher: Philosopher)
               right: Fork)
              (implicit forks: Forks,
               ctx: ActorContext[Protocol]): Unit = {
-    forks(left.self).isAvailable = true
-    forks(right.self).isAvailable = true
+    forks(left.self).setAvailable()
+    forks(right.self).setAvailable()
     ctx.log.info(s"Released $left, $right")
   }
 
