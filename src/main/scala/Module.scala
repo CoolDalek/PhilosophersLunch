@@ -1,7 +1,7 @@
-import actors.{Philosopher, Scheduler}
-import actors.impl.{PhilosopherImpl, SchedulerImpl}
+import actors.{Worker, Scheduler}
+import actors.impl.{WorkerImpl, SchedulerImpl}
 import akka.actor.typed.ActorSystem
-import configs.PhilosophersConfig
+import configs.WorkersConfig
 import pureconfig._
 import pureconfig.generic.auto._
 
@@ -9,9 +9,9 @@ trait Module {
 
   implicit val configSource: ConfigObjectSource = ConfigSource.default
 
-  implicit val philosophersConf: PhilosophersConfig = configSource.loadOrThrow[PhilosophersConfig]
+  implicit val philosophersConf: WorkersConfig = configSource.loadOrThrow[WorkersConfig]
 
-  val philosopher: Philosopher = new PhilosopherImpl
+  val philosopher: Worker = new WorkerImpl
 
   val scheduler: Scheduler = new SchedulerImpl(philosopher)
 

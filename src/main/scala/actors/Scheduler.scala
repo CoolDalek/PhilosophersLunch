@@ -2,7 +2,7 @@ package actors
 
 import actors.Scheduler.Protocol
 import akka.actor.typed.{ActorRef, Behavior}
-import models.Fork
+import models.Resource
 
 trait Scheduler {
 
@@ -15,6 +15,6 @@ object Scheduler {
 
   sealed trait Protocol
 
-  case class Release(left: Fork, right: Fork) extends Protocol
+  case class Release(left: Resource, right: Resource) extends Protocol
 
 }
