@@ -2,7 +2,7 @@ lazy val projectName = "PhilosophersLunch"
 
 name := projectName
 
-version := "0.1"
+version := "0.2"
 
 scalaVersion := "2.13.6"
 
