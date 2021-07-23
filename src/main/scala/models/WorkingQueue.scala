@@ -16,7 +16,7 @@ class WorkingQueue private(val underlay: mutable.Queue[WorkerCell]) {
     lowPriorityCount += 1
     if (lowPriorityCount == underlay.length) {
       var i = 0
-      val half = underlay.length / 2
+      val half = math.max(1, underlay.length / 2)
       while (i < half) {
         underlay(i).setHigh()
         i += 1
