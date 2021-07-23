@@ -14,8 +14,14 @@ class WorkingQueue private(val underlay: mutable.Queue[WorkerCell]) {
 
   def updatePriorityCount(): Unit = {
     lowPriorityCount += 1
-    if (lowPriorityCount > underlay.length / 2) {
-      underlay.foreach(_.setHigh())
+    if (lowPriorityCount == underlay.length) {
+      var i = 0
+      val half = underlay.length / 2
+      while (i < half) {
+        underlay(i).setHigh()
+        i += 1
+      }
+      lowPriorityCount = underlay.length - half
     }
   }
 
