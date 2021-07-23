@@ -4,7 +4,7 @@ Download release archive and unzip it. Runnable files located in ```bin``` direc
 
 Use ```philosopherslunch``` file on linux and mac, ```philosopherslunch.bat``` on windows.
 
-You can change configuration ny modifying ```application.conf``` file.
+You can change configuration by modifying ```application.conf``` file.
 
 #### Project building
 
