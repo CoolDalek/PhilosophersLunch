@@ -12,7 +12,7 @@ class WorkingQueue private(val underlay: mutable.Queue[WorkerCell]) {
 
   def length: Int = underlay.length
 
-  def updatePriorityCount(): Unit = {
+  private def updatePriorityCount(): Unit = {
     lowPriorityCount += 1
     if (lowPriorityCount == underlay.length) {
       var i = 0
@@ -25,23 +25,6 @@ class WorkingQueue private(val underlay: mutable.Queue[WorkerCell]) {
     }
   }
 
-  def enqueue(workerCell: WorkerCell): WorkingQueue = {
-    underlay.enqueue(workerCell)
-    this
-  }
-
-  def reset(workerCell: WorkerCell): WorkingQueue = {
-    @scala.annotation.tailrec
-    def find(position: Int = 0): Int = {
-      if(underlay(position) == workerCell) {
-        position
-      } else {
-        find(position + 1)
-      }
-    }
-    reset(workerCell, find())
-  }
-
   def reset(workerCell: WorkerCell, idx: Int): WorkingQueue = {
     underlay.remove(idx)
     underlay.enqueue(workerCell)
@@ -52,8 +35,6 @@ class WorkingQueue private(val underlay: mutable.Queue[WorkerCell]) {
 
 }
 object WorkingQueue {
-
-  def empty = new WorkingQueue(mutable.Queue.empty[WorkerCell])
 
   def apply(total: Int)(workerFactory: Int => WorkerActor): WorkingQueue = {
     val builder = mutable.Queue.newBuilder[WorkerCell]

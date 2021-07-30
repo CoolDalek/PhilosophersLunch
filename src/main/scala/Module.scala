@@ -11,9 +11,9 @@ trait Module {
 
   implicit val philosophersConf: WorkersConfig = configSource.loadOrThrow[WorkersConfig]
 
-  val philosopher: Worker = new WorkerImpl
+  val worker: Worker = new WorkerImpl
 
-  val scheduler: Scheduler = new SchedulerImpl(philosopher)
+  val scheduler: Scheduler = new SchedulerImpl(worker)
 
   implicit val system: ActorSystem[Scheduler.Protocol] =
     ActorSystem(scheduler(), "PhilosopherLunch")

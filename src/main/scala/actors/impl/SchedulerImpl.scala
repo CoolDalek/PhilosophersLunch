@@ -52,10 +52,10 @@ class SchedulerImpl(worker: Worker)
     ctx.log.info("Scheduling work")
 
     def isAvailable(worker: WorkerCell) =
-      worker.isHigh && resources.isAvailableComplete(worker.number)
+      worker.isHigh && resources.isAvailableWithNext(worker.number)
 
     def acquire(i: Int): Worker.Acquire = {
-      val (left, right) = resources.acquireComplete(i)
+      val (left, right) = resources.acquireWithNext(i)
       Worker.Acquire(left.resource, right.resource)
     }
 
@@ -88,8 +88,8 @@ class SchedulerImpl(worker: Worker)
              (implicit ctx: ActorContext[Protocol],
               workingQueue: WorkingQueue,
               resources: Resources): Unit = {
-    resources.releaseOne(left.self)
-    resources.releaseOne(right.self)
+    resources.release(left.self)
+    resources.release(right.self)
     ctx.log.info(s"Released $left, $right")
   }
 
